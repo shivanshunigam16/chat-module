@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    env_file:
+      - ".env"
+    command: "python manage.py runserver 0.0.0.0:8000"
+
+  db:
+    container_name: chat-db
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: "betterwork"
+      POSTGRES_USER: "betterwork"
+      POSTGRES_DB: "testing"
+
+volumes:
+  postgres_data:
+
+
