@@ -40,8 +40,6 @@ staticfiles/
 *.env
 
 # Ignore Docker related files
-.dockerignore
-Dockerfile*
 
 # Ignore IDE files
 .idea/
