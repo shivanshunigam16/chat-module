@@ -42,7 +42,7 @@ class Room(models.Model):
 
 class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to ='uploads/',blank=True, null=True)
