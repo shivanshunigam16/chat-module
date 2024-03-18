@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="alert alert-info" role="button" data-toggle="collapse" data-target="#public-rooms" aria-expanded="false" aria-controls="public-rooms">
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <h5 class="mb-0">Available Public Rooms <i class="fas fa-chevron-down"></i></h5>
+            </div>
+        </div>
+    </div>
+    <div id="public-rooms" class="collapse" aria-labelledby="public-rooms">
+        <div class="card-container">
+            {% if rooms %}
+                {% for room in rooms %}
+                    {% if room.room_type == 'public' %}
+                        <div class="card bg-light mb-3" id="room_name_{{ room.id }}" >
+                            <div class="card-block">
+                                <h3 class="card-title">
+                                    {{ room.name }}
+                                </h3>
+                                <p class="card-text">It is a Public group for this Project.</p>
+                                <a href="/{{ room.slug }}/{{ room.id }}" class="btn btn-outline-secondary">Go to Room</a>
+                                <button class="btn btn-outline-danger" onclick="DeleteRoomPopup('{{ room.id }}')">Delete Room</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                No Rooms Available!
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="alert alert-info" role="button" data-toggle="collapse" data-target="#private-rooms" aria-expanded="false" aria-controls="private-rooms">
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <h5 class="mb-0">Your Groups <i class="fas fa-chevron-down"></i></h5>
+            </div>
+        </div>
+    </div>
+    <div id="private-rooms" class="collapse" aria-labelledby="private-rooms">
+        {% if rooms %}
+            <div class="card-container">
+                {% for room in rooms %}
+                    {% if room.room_type == 'private' %}
+                        <div class="card bg-light mb-3" id="room_name_{{ room.id }}">
+                            <div class="card-block">
+                                <h3 class="card-title">
+                                    {{ room.name }}
+                                </h3>
+                                <p class="card-text">It is a Private group for this Project.</p>
+                                <a href="/{{ room.slug }}/{{ room.id }}" class="btn btn-outline-secondary">Go to Room</a>
+                                <button class="btn btn-outline-danger" onclick="DeleteRoomPopup('{{ room.id }}')">Delete Room</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            No Rooms Available!
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="delete_room" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Are you sure want to delete ?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button onclick="DeleteRoom()" type="button" class="btn btn-primary">Confirm</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br/>
+<script>
+   function DeleteRoomPopup(roomId) {
+        $("#delete_room").modal('show')
+        localStorage.setItem("room_id", roomId);
+    } 
+    function DeleteRoom() {
+    const room_id = localStorage.getItem("room_id");
+
+    if (!room_id) {
+        console.error('Room ID is missing in localStorage');
+        return;
+    }
+    const csrftoken = getCookie('csrftoken');
+    const data = {
+        "room_id": room_id
+    };
+    $.ajax({
+        type: 'POST',
+        url: '/delete-room/' + room_id + '/',
+        data: JSON.stringify(data), 
+        contentType: 'application/json', 
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function(response) {
+            console.log('Room deleted successfully:', response);
+            var cardToRemove = document.getElementById("room_name_" + room_id);
+            $("#delete_room").modal('hide')
+            cardToRemove.remove();
+        },
+        error: function(xhr, status, error) {
+            $("#delete_room").modal('hide')
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue; 
+ } 
+</script> 
+
+{% endblock %}

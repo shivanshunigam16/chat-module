@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+  {% block style %}
+      form {
+      max-width: 500px; 
+      margin: 0 auto; 
+      padding: 20px;
+      border: 1px solid #ccc; 
+      border-radius: 5px; 
+    }
+
+    label {
+      display: block; 
+      margin-bottom: 10px; 
+    }
+
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px; 
+      border: 1px solid #ccc; 
+      border-radius: 4px; 
+      margin-bottom: 10px; 
+    }
+
+    button {
+      width: 100%; 
+      background-color: #007bff; 
+      color: white; 
+      padding: 10px; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
+
+    body {
+      font-family: sans-serif; 
+    }
+
+    label {
+      font-weight: bold;
+    }
+    form {
+      display: flex; 
+      flex-direction: column; 
+    }
+    
+    .btn-block {
+        display: block;
+        width: 112%;
+    }
+
+  {% endblock %}
+
+{% block content %}
+
+
+  <div class="container">
+    <h5 class="alert alert-info">Sign Up</h5>
+    <div class="btn btn-light d-flex justify-content-between" style="padding: 34px 30%;">
+        
+        <form method="post">
+          {% csrf_token %}
+          {% for fm in form %}
+           {{fm.label_tag }} {{fm}} {{fm.errors | striptags}}
+          {% endfor %}
+          <button type="submit" class="btn btn-primary btn-lg ">Sign Up</button>
+        </form>
+      </div>
+</div>  
+
+
+{% endblock %}

@@ -1,0 +1,121 @@
+
+{% extends 'base.html' %}
+
+{% block title %}AddRoom{% endblock %}
+
+{% block style %}
+    .btn {
+        background-color: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .btn-light.d-flex {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+        font-size: 16px;
+    
+        width: 100%;
+    }
+
+    #id_members {
+        height: 100px;
+        overflow-y: auto;
+    }
+
+    .btn-primary.btn-lg {
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 4px;
+        padding: 10px 20px;
+        font-size: 16px;
+        margin-top : 15px
+    }
+
+    .btn-block {
+        display: block;
+        width: 112%;
+    }
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="container">
+    <div class="container">
+        <div class="alert alert-info">
+            <div class="row justify-content-center">
+                <div class="col-auto">
+                    <h5>Add Rooms</h5>
+                </div>
+            </div>
+        </div>
+        <div class="btn btn-light d-flex justify-content-between" style="padding: 34px 30%;">
+            <form method="post">
+                {% csrf_token %}
+                {% for fm in form %}
+                    <label id="room_{{ fm.name }}_label" for="id_{{ fm.name }}">{{ fm.label }}</label>
+                    {{ fm }}
+                    {{ fm.errors | striptags }}
+                {% endfor %}
+                <label for="id_members">Members</label>
+                <select name="members" id="id_members" multiple>
+                    {% for user in all_users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-lg ">Create Room</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+{% comment %} document.getElementById("id_members").style.display = "none"; {% endcomment %}
+   
+function handleRoomTypeChange() {
+    var roomTypeSelect = document.getElementById("id_room_type");
+    var membersInput = document.getElementById("id_members");
+
+
+    // Check if the selected value is "private"
+    if (roomTypeSelect.value === "private") {
+        // Show the members input field
+        membersInput.style.display = "block";
+        document.querySelector('label[for="id_members"]').style.display = "block";
+    } else {
+        // Hide the members input field
+        membersInput.style.display = "none";
+        document.querySelector('label[for="id_members"]').style.display = "none";
+    }
+}
+
+document.getElementById("id_room_type").addEventListener("change", handleRoomTypeChange);
+handleRoomTypeChange();
+</script>
+
+{% endblock %}
