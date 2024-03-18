@@ -6,6 +6,7 @@ from django.views.generic import CreateView
 
 from .forms import AddRoomForm, UserRegistrationForm
 from .models import Message, Room, User
+from django.db.models import Q
 
 
 class SignUpView(CreateView):
@@ -21,7 +22,11 @@ class SignUpView(CreateView):
 
 class Home(View):
     def get(self, request):
-        room = Room.objects.all()
+        room = Room.objects.filter(
+            Q(room_type='public') | 
+            Q(Q(room_type='private') & Q(members=self.request.user)) |
+            Q(created_by=self.request.user)
+        )
         return render(request, "home.html", {'rooms': room, 'is_home_page':True})
 
 
@@ -60,6 +65,7 @@ class AddRoomViewset(CreateView):
     def form_valid(self, form):
         room_instance = form.save(commit=False)
         selected_members_ids = self.request.POST.getlist('members')
+        selected_members_ids.append(self.request.user.id)
         selected_members = User.objects.filter(pk__in=selected_members_ids)
         room_instance.created_by = self.request.user
         room_instance.save()
