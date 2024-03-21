@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Room{% endblock %}
 
 {% block content %}
 
 {% if user.is_authenticated %}
 
-  
  <div class="container">
     <div class="row d-flex justify-content-center">
         <div class="col-12">
@@ -42,7 +41,7 @@
                     {% endif %}
                 </div>
                 <br/>
-                <div class="form-row align-items-center">
+                <div class="form-row align-items-center"id="test">
                     <div class="col-10">
                         <input class="form-control" placeholder="Enter text here" id="my_input" type="text" required>
                     </div>
@@ -57,6 +56,9 @@
                 <br/>
                 <input class="btn btn-primary btn-lg btn-block" id="submit_button" type="button" value="Send">
             </form>
+            <div class="restrict_message">
+             <b id="restrict_message">You are no loneger part of the group, you can send or read new messages.</b>
+            </div>
         </div>
     </div>
 </div>
@@ -81,9 +83,34 @@
 </div>
 
 {{slug|json_script:"room_slug"}}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
+ 
+ getMessagePermission();
+ function getMessagePermission() {
+        var roomId = window.location.pathname.split('/')[2]
+        $.ajax({
+            type: 'GET',
+            url: '/members/room/' + roomId + '/message-permission',
+            contentType: 'application/json', 
+            success: function (response) {
+            if(response['restrict_messaging'] === true){
+                document.getElementById("submit_button").style.display = "none";
+                document.getElementById("test").style.display = "none";
+                 document.getElementById("restrict_message").style.display = "block";
 
-const chatbox = document.querySelector("#chatbox");
+            }
+            else{
+                document.getElementById("restrict_message").style.display = "none";
+            }
+            },
+            error: function (error) {
+                console.log('Error:', error);
+            }
+        });
+    }
+
+  const chatbox = document.querySelector("#chatbox");
 
   function scrollToBottom() {
     chatbox.scrollTop = chatbox.scrollHeight;
@@ -213,7 +240,9 @@ const chatbox = document.querySelector("#chatbox");
         },
         success: function(response) {
             console.log('Room deleted successfully:', response);
+            
             document.getElementById("user_" + userId).remove();
+            getMessagePermission()
         },
         error: function(xhr, status, error) {
             console.error('Error deleting room:', error);
@@ -238,9 +267,7 @@ const chatbox = document.querySelector("#chatbox");
     }
     return cookieValue; 
  };
-
-</script>
-
+ </script>
 {% else %}
 <div class="container">
     <div class="container">

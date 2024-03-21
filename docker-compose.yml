@@ -2,6 +2,8 @@ version: '3'
 
 services:
   web:
+    stdin_open: true
+    tty: true
     build: .
     ports:
       - "8000:8000"
