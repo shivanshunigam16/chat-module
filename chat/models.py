@@ -34,7 +34,12 @@ class Room(models.Model):
         related_name="created_rooms",
         verbose_name="Created By"
     )
-
+    
+    members_removed = models.ManyToManyField(
+        User, related_name="member_removed",
+        blank=True,
+        verbose_name="Member of Group that was removed by admin"
+    )
 
     def __str__(self):
         return "Room : "+ self.name + " | Id : " + self.slug
@@ -49,3 +54,13 @@ class Message(models.Model):
 
     def __str__(self):
         return "Message is :- "+ self.content
+    
+
+class UserGroupLeftInfo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    left_at = models.DateTimeField(auto_now_add=True)
+    
+
+    def __str__(self):
+        return self.user.username + ' ' + 'left' + ' ' +self.room.name + ' at' + ' ' + str(self.left_at)

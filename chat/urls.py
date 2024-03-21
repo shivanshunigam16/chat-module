@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
-from .views import Home, SignUpView, RoomDetail, AddRoomViewset, DeleteRoom, GroupMembers
+from .views import Home, SignUpView, RoomDetail, AddRoomViewset, DeleteRoom, GroupMembers, MessagePermission
 
 urlpatterns = [
     path('', Home.as_view(), name='home'),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('delete-room/<int:pk>/', DeleteRoom.as_view(), name='delete_room'),
     path('group-members/<int:pk>/', GroupMembers.as_view(), name='members'),
     path('group-members/<int:pk>/remove-user/<int:user_id>/', GroupMembers.as_view(), name='remove_user'),
+    path('members/room/<int:room_id>/message-permission', MessagePermission.as_view(), name='message_permission'),
 
 ] 
 if settings.DEBUG:
