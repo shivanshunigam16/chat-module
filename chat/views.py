@@ -5,7 +5,7 @@ from django.views import View
 from django.views.generic import CreateView
 
 from .forms import AddRoomForm, UserRegistrationForm
-from .models import Message, Room, User
+from .models import Message, Room, User, UserGroupLeftInfo
 from django.db.models import Q
 
 
@@ -22,11 +22,15 @@ class SignUpView(CreateView):
 
 class Home(View):
     def get(self, request):
-        room = Room.objects.filter(
-            Q(room_type='public') | 
-            Q(Q(room_type='private') & Q(members=self.request.user)) |
-            Q(created_by=self.request.user)
-        )
+        if request.user.is_authenticated:
+            room = Room.objects.filter(
+                Q(room_type='public') |
+                Q(Q(room_type='private') & Q(members=self.request.user)) |
+                Q(created_by=self.request.user) |
+                Q(members_removed=self.request.user)
+            ).distinct()
+        else:
+            room = Room.objects.filter(room_type='public')
         return render(request, "home.html", {'rooms': room, 'is_home_page':True})
 
 
@@ -39,7 +43,12 @@ class RoomDetail(View):
     """
     def get(self, request, slug, pk):
         room = get_object_or_404(Room, id=pk, slug=slug)
-        messages = Message.objects.filter(room=room).select_related('user')
+        query= Q()
+        if request.user.is_authenticated:
+            user_left_detail = UserGroupLeftInfo.objects.filter(user=self.request.user, room=room)
+            if user_left_detail:
+                query=Q(created_on__gt=user_left_detail[0].left_at)
+        messages = Message.objects.filter(room=room).select_related('user').exclude(query)
 
         context = {
             "room_name": room.name,
@@ -143,6 +152,9 @@ class GroupMembers(View):
             room = Room.objects.get(id=pk)
             user = room.members.filter(id=user_id).first()
             if user:
+                user_left_detail =  UserGroupLeftInfo(user=user, room=room)
+                user_left_detail.save()
+                room.members_removed.add(user)
                 room.members.remove(user)
                 return JsonResponse(
                     {'message': 'User removed from the room successfully'}
@@ -154,3 +166,20 @@ class GroupMembers(View):
                 )
         except Room.DoesNotExist:
             return JsonResponse({'error': 'Room does not exist'}, status=404)
+        
+
+class MessagePermission(View):
+
+    def get(self, request, room_id):
+        try:
+            room = Room.objects.get(id=room_id)
+            if self.request.user in room.members_removed.all():
+                return JsonResponse({'restrict_messaging': True})
+            else:
+                return JsonResponse({'restrict_messaging': False})
+        except Room.DoesNotExist:
+            return JsonResponse(
+                {'error': 'Room does not exist'},
+                status=404
+            )
+
